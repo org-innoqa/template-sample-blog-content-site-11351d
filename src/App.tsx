@@ -1,82 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
-import { db } from './lib/db';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { BookOpen, User, Tag } from 'lucide-react';
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  category: string;
-  created_at: string;
-}
+const posts = [
+  { id: 1, title: 'The Future of Interface Design', category: 'Design', readTime: '8 min', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=800' },
+  { id: 2, title: 'Understanding Neural Networks', category: 'Tech', readTime: '12 min', image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800' },
+  { id: 3, title: 'Minimalism in Code', category: 'Tech', readTime: '5 min', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800' },
+];
 
-const Home = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  useEffect(() => {
-    db.select('posts', '?order=created_at.desc').then(setPosts);
-  }, []);
+const Nav = () => (
+  <nav className="flex justify-between items-center py-8 px-6 max-w-6xl mx-auto">
+    <Link to="/" className="text-3xl font-bold tracking-tighter">FIELDNOTES</Link>
+    <div className="space-x-6">
+      <Link to="/" className="hover:underline">Articles</Link>
+      <Link to="/about" className="hover:underline">About</Link>
+    </div>
+  </nav>
+);
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8">Son Yazılar</h1>
-      <div className="grid gap-6">
-        {posts.map(post => (
-          <Link key={post.id} to={`/post/${post.id}`} className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
-            <h2 className="text-2xl font-semibold">{post.title}</h2>
-            <p className="text-gray-500 text-sm mt-2">{new Date(post.created_at).toLocaleDateString()} • {post.category}</p>
-          </Link>
-        ))}
+const Home = () => (
+  <div className="max-w-6xl mx-auto px-6 pb-20">
+    <div className="mb-16">
+      <div className="relative h-[500px] w-full overflow-hidden rounded-lg">
+        <img src={posts[0].image} className="w-full h-full object-cover" alt="Featured" />
+        <div className="absolute bottom-0 left-0 p-10 bg-gradient-to-t from-black/70 to-transparent text-white">
+          <span className="text-sm uppercase tracking-widest">Featured</span>
+          <h1 className="text-5xl font-bold mt-2">{posts[0].title}</h1>
+        </div>
       </div>
     </div>
-  );
-};
-
-const PostDetail = () => {
-  const { id } = useParams();
-  const [post, setPost] = useState<Post | null>(null);
-
-  useEffect(() => {
-    db.select('posts', `?id=eq.${id}`).then(data => setPost(data[0]));
-  }, [id]);
-
-  if (!post) return <div className="p-10">Yükleniyor...</div>;
-
-  return (
-    <article className="max-w-3xl mx-auto p-6">
-      <h1 className="text-5xl font-bold mb-4">{post.title}</h1>
-      <div className="flex items-center gap-4 text-gray-600 mb-8">
-        <span className="flex items-center gap-1"><Tag size={16}/> {post.category}</span>
-      </div>
-      <div className="prose max-w-none">{post.content}</div>
-    </article>
-  );
-};
+    <div className="grid md:grid-cols-3 gap-10">
+      {posts.map(post => (
+        <div key={post.id} className="group">
+          <img src={post.image} className="w-full h-64 object-cover rounded mb-4" alt={post.title} />
+          <div className="flex gap-2 text-xs text-stone-500 mb-2">
+            <span>{post.category}</span> • <span>{post.readTime}</span>
+          </div>
+          <h2 className="text-2xl font-bold group-hover:underline">{post.title}</h2>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const About = () => (
-  <div className="max-w-2xl mx-auto p-6">
-    <h1 className="text-3xl font-bold mb-4">Hakkımızda</h1>
-    <p>Bu blog, teknoloji ve yazılım üzerine düşüncelerimi paylaştığım kişisel bir alandır.</p>
+  <div className="max-w-3xl mx-auto px-6 py-20">
+    <h1 className="text-4xl font-bold mb-8">About Fieldnotes</h1>
+    <p className="prose-custom">Fieldnotes is a digital publication exploring the intersection of human-centered design and emerging technology. We believe in slow reading and deep thinking.</p>
   </div>
 );
 
 export default function App() {
   return (
-    <Router>
-      <nav className="bg-white border-b p-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link to="/" className="font-bold text-xl flex items-center gap-2"><BookOpen /> BlogApp</Link>
-          <div className="flex gap-4">
-            <Link to="/">Ana Sayfa</Link>
-            <Link to="/about">Hakkında</Link>
-          </div>
-        </div>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/post/:id" element={<PostDetail />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <div className="min-h-screen">
+        <Nav />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
